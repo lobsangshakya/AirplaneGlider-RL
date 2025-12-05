@@ -9,7 +9,7 @@ const scoreDisplay = document.getElementById("score");
 let planeX = 180;
 let planeY = 550;
 let windX = 150;
-let windY = -40;  // Start wind off-screen
+let windY = 0;
 let timeRemaining = 15;
 let score = 0;
 let interval;
@@ -79,8 +79,8 @@ function startGame() {
     // Reset game state
     planeX = 180;
     planeY = 550;
-    windX = Math.floor(Math.random() * 350);  // Random starting position
-    windY = -40;  // Start wind off-screen
+    windX = 150;
+    windY = 0;
     timeRemaining = 15;
     score = 0;
     gameActive = true;
@@ -131,22 +131,15 @@ function startGame() {
         windY += 5;
         wind.style.top = windY + "px";
         
-        // Manual collision detection (using bounding boxes)
-        const planeLeft = planeX;
-        const planeRight = planeX + 40;
-        const planeTop = 600 - planeY - 20;
-        const planeBottom = 600 - planeY;
+        // Collision check
+        let planeRect = plane.getBoundingClientRect();
+        let windRect = wind.getBoundingClientRect();
         
-        const windLeft = windX;
-        const windRight = windX + 30;
-        const windTop = windY;
-        const windBottom = windY + 30;
-        
-        // Check for collision
-        if (planeLeft < windRight && 
-            planeRight > windLeft && 
-            planeTop < windBottom && 
-            planeBottom > windTop) {
+        // More accurate collision detection
+        if (planeRect.left < windRect.right && 
+            planeRect.right > windRect.left && 
+            planeRect.top < windRect.bottom && 
+            planeRect.bottom > windRect.top) {
             alert("CRASHED! Game Over.");
             clearInterval(interval);
             gameActive = false;
@@ -173,8 +166,8 @@ function startGame() {
             return;
         }
         
-        // Reset wind when it goes off screen
-        if (windY > 640) {
+        // Reset wind
+        if (windY > 600) {
             windY = -40;
             wind.style.top = windY + "px";
             windX = Math.floor(Math.random() * 350);

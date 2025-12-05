@@ -57,30 +57,20 @@ h1 {
     border: 2px solid #87CEEB;
 }
 
-/* Plane Styles */
+/* Airplane Styles */
 #plane {
-    width: 40px;
-    height: 40px;
     position: absolute;
     bottom: 50px;
     left: 180px;
-    font-size: 30px;
-    text-align: center;
-    line-height: 40px;
-    transition: transform 0.1s ease;
     z-index: 10;
+    transition: transform 0.1s ease;
 }
 
 /* Wind/Obstacle Styles */
 #wind {
-    width: 40px;
-    height: 40px;
     position: absolute;
-    top: 0px;
+    top: -30px;
     left: 150px;
-    font-size: 30px;
-    text-align: center;
-    line-height: 40px;
     z-index: 5;
 }
 
