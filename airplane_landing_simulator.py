@@ -161,6 +161,38 @@ HTML_TEMPLATE = """
             transition: height 0.3s;
         }
 
+        .crash-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 0, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: bold;
+            z-index: 100;
+        }
+
+        .success-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 255, 0, 0.7);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: bold;
+            z-index: 100;
+        }
+
         @media (max-width: 650px) {
             .game-area {
                 width: 95%;
@@ -185,7 +217,7 @@ HTML_TEMPLATE = """
         
         <div class="instructions">
             <p>Use LEFT and RIGHT arrow keys to control engine thrust</p>
-            <p>Balance the airplane during slow descent for a safe landing!</p>
+            <p>Left Engine: Tilt plane RIGHT | Right Engine: Tilt plane LEFT</p>
         </div>
         
         <div class="game-area" id="gameArea">
@@ -204,6 +236,9 @@ HTML_TEMPLATE = """
             <div class="altitude-bar">
                 <div class="altitude-fill" id="altitudeFill"></div>
             </div>
+            
+            <div class="crash-animation" id="crashAnimation">💥 CRASH!</div>
+            <div class="success-animation" id="successAnimation">✅ SUCCESS!</div>
         </div>
         
         <div class="controls">
@@ -235,6 +270,8 @@ HTML_TEMPLATE = """
         const status = document.getElementById('status');
         const altitudeFill = document.getElementById('altitudeFill');
         const gameArea = document.getElementById('gameArea');
+        const crashAnimation = document.getElementById('crashAnimation');
+        const successAnimation = document.getElementById('successAnimation');
         
         // Initialize positions
         updateAirplanePosition();
@@ -302,9 +339,9 @@ HTML_TEMPLATE = """
             leftKey.classList.add('active');
             leftFlame.style.opacity = '1';
             
-            // Apply left thrust (creates clockwise rotation and slight left movement)
+            // Apply left thrust (creates counter-clockwise rotation - tilts plane RIGHT)
             velocityX -= 0.2;
-            angularVelocity += 0.8; // Increased rotation effect
+            angularVelocity -= 0.8; // Negative for counter-clockwise rotation
         }
         
         function deactivateLeftEngine() {
@@ -316,9 +353,9 @@ HTML_TEMPLATE = """
             rightKey.classList.add('active');
             rightFlame.style.opacity = '1';
             
-            // Apply right thrust (creates counter-clockwise rotation and slight right movement)
+            // Apply right thrust (creates clockwise rotation - tilts plane LEFT)
             velocityX += 0.2;
-            angularVelocity -= 0.8; // Increased rotation effect
+            angularVelocity += 0.8; // Positive for clockwise rotation
         }
         
         function deactivateRightEngine() {
@@ -341,6 +378,16 @@ HTML_TEMPLATE = """
         function updateStatus() {
             status.textContent = `Altitude: ${Math.round(altitude)}ft | Speed: ${Math.round(speed)} mph | Angle: ${Math.round(airplaneAngle)}°`;
             altitudeFill.style.height = (altitude / 300 * 100) + '%';
+        }
+        
+        function showCrash() {
+            crashAnimation.style.display = 'flex';
+            gameRunning = false;
+        }
+        
+        function showSuccess() {
+            successAnimation.style.display = 'flex';
+            gameRunning = false;
         }
         
         // Game loop
@@ -375,13 +422,11 @@ HTML_TEMPLATE = """
                 airplaneY = 320;
                 velocityY = 0;
                 
-                // Check landing success (more lenient angle requirement)
-                if (Math.abs(airplaneAngle) < 15 && Math.abs(velocityX) < 3) {
-                    status.textContent = "✅ SUCCESSFUL LANDING!";
-                    gameRunning = false;
+                // Check landing success
+                if (Math.abs(airplaneAngle) < 10 && Math.abs(velocityX) < 2) {
+                    showSuccess();
                 } else {
-                    status.textContent = "💥 CRASH LANDING! Try again.";
-                    gameRunning = false;
+                    showCrash();
                 }
             }
             
