@@ -217,7 +217,7 @@ HTML_TEMPLATE = """
         
         <div class="instructions">
             <p>Use LEFT and RIGHT arrow keys to control engine thrust</p>
-            <p>Left Engine: Tilt plane RIGHT | Right Engine: Tilt plane LEFT</p>
+            <p>Left Engine: Pushes plane RIGHT | Right Engine: Pushes plane LEFT</p>
         </div>
         
         <div class="game-area" id="gameArea">
@@ -255,7 +255,7 @@ HTML_TEMPLATE = """
         let airplaneY = 50;
         let airplaneAngle = 0;
         let velocityX = 0;
-        let velocityY = 0.5; // Slower descent speed
+        let velocityY = 0.3; // Slow descent due to gravity
         let angularVelocity = 0;
         let altitude = 300;
         let speed = 20;
@@ -339,9 +339,9 @@ HTML_TEMPLATE = """
             leftKey.classList.add('active');
             leftFlame.style.opacity = '1';
             
-            // Apply left thrust (creates counter-clockwise rotation - tilts plane RIGHT)
-            velocityX -= 0.2;
-            angularVelocity -= 0.8; // Negative for counter-clockwise rotation
+            // Apply left thrust: pushes plane RIGHT and creates CLOCKWISE rotation
+            velocityX += 0.4;  // Push right
+            angularVelocity += 1.2; // Clockwise rotation
         }
         
         function deactivateLeftEngine() {
@@ -353,9 +353,9 @@ HTML_TEMPLATE = """
             rightKey.classList.add('active');
             rightFlame.style.opacity = '1';
             
-            // Apply right thrust (creates clockwise rotation - tilts plane LEFT)
-            velocityX += 0.2;
-            angularVelocity += 0.8; // Positive for clockwise rotation
+            // Apply right thrust: pushes plane LEFT and creates COUNTER-CLOCKWISE rotation
+            velocityX -= 0.4;  // Push left
+            angularVelocity -= 1.2; // Counter-clockwise rotation
         }
         
         function deactivateRightEngine() {
@@ -394,15 +394,15 @@ HTML_TEMPLATE = """
         function gameLoop() {
             if (!gameRunning) return;
             
-            // Apply reduced gravity for slower descent
-            velocityY += 0.05;
+            // Apply gravity for slow descent
+            velocityY += 0.03;
             
             // Apply angular damping (natural stabilization)
-            angularVelocity *= 0.95;
+            angularVelocity *= 0.96;
             airplaneAngle += angularVelocity;
             
             // Apply air resistance
-            velocityX *= 0.98;
+            velocityX *= 0.99;
             velocityY *= 0.995;
             
             // Update position
@@ -411,11 +411,11 @@ HTML_TEMPLATE = """
             
             // Update altitude and speed
             altitude = 300 - airplaneY;
-            speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY) * 10;
+            speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY) * 15;
             
-            // Boundary checks
-            if (airplaneX < 40) airplaneX = 40;
-            if (airplaneX > 560) airplaneX = 560;
+            // Boundary checks (allow some movement beyond edges)
+            if (airplaneX < -50) airplaneX = -50;
+            if (airplaneX > 650) airplaneX = 650;
             
             // Ground collision
             if (airplaneY > 320) {
@@ -423,7 +423,7 @@ HTML_TEMPLATE = """
                 velocityY = 0;
                 
                 // Check landing success
-                if (Math.abs(airplaneAngle) < 10 && Math.abs(velocityX) < 2) {
+                if (Math.abs(airplaneAngle) < 8 && Math.abs(velocityX) < 1.5) {
                     showSuccess();
                 } else {
                     showCrash();
