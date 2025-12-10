@@ -1,46 +1,32 @@
-# Airplane Simulators
+# Realistic Airplane Landing Simulator
 
-A collection of airplane simulation games.
+A clean, lightweight 2D airplane landing simulator with realistic physics.
 
-## 1. Mountain Car Glider (RL)
+## Features
 
-A reinforcement learning-powered airplane glider game with Mountain Car-style physics.
+- Realistic thrust physics (fire one side → movement in opposite direction)
+- Smooth airplane rotation and movement
+- Gravity-based descent
+- Proper landing/crash detection
+- Clean visual design
 
-### Quick Start
-
-```bash
-python run_mountain_car.py
-```
-
-Then open http://localhost:8003
-
-### Controls
-- ← → : Horizontal thrust
-- ↑ : Upward thrust
-
-### Features
-- Physics-based movement with momentum
-- Trained RL agent
-- Modern web interface
-
-## 2. 2D Landing Simulator
-
-A simple physics-based landing simulator where you control engine thrust to balance the airplane.
-
-### Quick Start
+## Quick Start
 
 ```bash
-python run_landing_simulator.py
+python run_airplane_lander.py
 ```
 
-Then open http://localhost:8004
+Then open http://localhost:8005
 
-### Controls
-- ← : Left engine thrust (turns plane left)
-- → : Right engine thrust (turns plane right)
+## Controls
 
-### Features
-- Realistic thrust physics
-- Balance challenge during descent
-- Visual engine flame effects
-- Mobile-friendly controls
+- ← : Fire left engine (pushes plane RIGHT, tilts CLOCKWISE)
+- → : Fire right engine (pushes plane LEFT, tilts COUNTER-CLOCKWISE)
+
+## Physics
+
+- Realistic thrust behavior
+- Smooth rotation with momentum
+- Natural stabilization
+- Weight and inertia simulation
+- Soft acceleration

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-2D Airplane Landing Simulator
-A simple physics-based simulator where players control left/right engine thrust to balance the airplane during descent.
+Realistic 2D Airplane Landing Simulator
+A clean implementation with realistic physics for airplane landing simulation.
 """
 
 import uvicorn
@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
 # Create FastAPI app
-app = FastAPI(title="2D Airplane Landing Simulator", description="Control airplane thrust for balanced landing")
+app = FastAPI(title="Realistic Airplane Landing Simulator", description="2D airplane landing with realistic physics")
 
 # HTML template with embedded CSS and JS
 HTML_TEMPLATE = """
@@ -18,7 +18,7 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D Airplane Landing Simulator</title>
+    <title>Realistic Airplane Landing Simulator</title>
     <style>
         body {
             margin: 0;
@@ -68,29 +68,29 @@ HTML_TEMPLATE = """
             position: absolute;
             width: 80px;
             height: 30px;
-            transition: transform 0.1s ease;
+            transition: transform 0.15s ease;
         }
 
         #left-engine-flame {
             position: absolute;
-            width: 25px;
-            height: 12px;
+            width: 30px;
+            height: 15px;
             background: linear-gradient(to right, orange, red, yellow);
             border-radius: 50% 0 0 50%;
             opacity: 0;
             transition: opacity 0.1s;
-            box-shadow: 0 0 10px orange;
+            box-shadow: 0 0 15px orange;
         }
 
         #right-engine-flame {
             position: absolute;
-            width: 25px;
-            height: 12px;
+            width: 30px;
+            height: 15px;
             background: linear-gradient(to left, orange, red, yellow);
             border-radius: 0 50% 50% 0;
             opacity: 0;
             transition: opacity 0.1s;
-            box-shadow: 0 0 10px orange;
+            box-shadow: 0 0 15px orange;
         }
 
         .ground {
@@ -167,7 +167,24 @@ HTML_TEMPLATE = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 0, 0, 0.7);
+            background: rgba(255, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: white;
+            font-weight: bold;
+            z-index: 100;
+            animation: shake 0.5s infinite;
+        }
+
+        .success-animation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 128, 0, 0.8);
             display: none;
             justify-content: center;
             align-items: center;
@@ -177,20 +194,18 @@ HTML_TEMPLATE = """
             z-index: 100;
         }
 
-        .success-animation {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 255, 0, 0.7);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            font-size: 3rem;
-            color: white;
-            font-weight: bold;
-            z-index: 100;
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
         }
 
         @media (max-width: 650px) {
@@ -213,7 +228,7 @@ HTML_TEMPLATE = """
 </head>
 <body>
     <div class="container">
-        <h1>✈️ 2D Airplane Landing Simulator</h1>
+        <h1>✈️ Realistic Airplane Landing Simulator</h1>
         
         <div class="instructions">
             <p>Use LEFT and RIGHT arrow keys to control engine thrust</p>
@@ -246,7 +261,7 @@ HTML_TEMPLATE = """
             <div class="key" id="rightKey">→</div>
         </div>
         
-        <div class="status" id="status">Altitude: 300ft | Speed: 20 mph | Angle: 0°</div>
+        <div class="status" id="status">Altitude: 300ft | Speed: 15 mph | Angle: 0°</div>
     </div>
     
     <script>
@@ -255,11 +270,12 @@ HTML_TEMPLATE = """
         let airplaneY = 50;
         let airplaneAngle = 0;
         let velocityX = 0;
-        let velocityY = 0.3; // Slow descent due to gravity
+        let velocityY = 0.25; // Slow descent due to gravity
         let angularVelocity = 0;
         let altitude = 300;
-        let speed = 20;
+        let speed = 15;
         let gameRunning = true;
+        let lastThrustTime = 0;
         
         // DOM elements
         const airplane = document.getElementById('airplane');
@@ -336,12 +352,23 @@ HTML_TEMPLATE = """
         rightKey.addEventListener('mouseleave', deactivateRightEngine);
         
         function activateLeftEngine() {
+            const now = Date.now();
+            if (now - lastThrustTime < 50) return; // Prevent spam
+            lastThrustTime = now;
+            
             leftKey.classList.add('active');
             leftFlame.style.opacity = '1';
             
             // Apply left thrust: pushes plane RIGHT and creates CLOCKWISE rotation
-            velocityX += 0.4;  // Push right
-            angularVelocity += 1.2; // Clockwise rotation
+            velocityX += 0.35;  // Push right
+            angularVelocity += 1.0; // Clockwise rotation
+            
+            // Add slight wobble effect
+            setTimeout(() => {
+                if (leftKey.classList.contains('active')) {
+                    airplaneAngle += 0.5;
+                }
+            }, 50);
         }
         
         function deactivateLeftEngine() {
@@ -350,12 +377,23 @@ HTML_TEMPLATE = """
         }
         
         function activateRightEngine() {
+            const now = Date.now();
+            if (now - lastThrustTime < 50) return; // Prevent spam
+            lastThrustTime = now;
+            
             rightKey.classList.add('active');
             rightFlame.style.opacity = '1';
             
             // Apply right thrust: pushes plane LEFT and creates COUNTER-CLOCKWISE rotation
-            velocityX -= 0.4;  // Push left
-            angularVelocity -= 1.2; // Counter-clockwise rotation
+            velocityX -= 0.35;  // Push left
+            angularVelocity -= 1.0; // Counter-clockwise rotation
+            
+            // Add slight wobble effect
+            setTimeout(() => {
+                if (rightKey.classList.contains('active')) {
+                    airplaneAngle -= 0.5;
+                }
+            }, 50);
         }
         
         function deactivateRightEngine() {
@@ -368,11 +406,11 @@ HTML_TEMPLATE = """
             airplane.style.top = airplaneY + 'px';
             airplane.style.transform = `rotate(${airplaneAngle}deg)`;
             
-            leftFlame.style.left = (airplaneX - 55) + 'px';
-            leftFlame.style.top = (airplaneY + 9) + 'px';
+            leftFlame.style.left = (airplaneX - 60) + 'px';
+            leftFlame.style.top = (airplaneY + 7) + 'px';
             
             rightFlame.style.left = (airplaneX + 30) + 'px';
-            rightFlame.style.top = (airplaneY + 9) + 'px';
+            rightFlame.style.top = (airplaneY + 7) + 'px';
         }
         
         function updateStatus() {
@@ -395,14 +433,14 @@ HTML_TEMPLATE = """
             if (!gameRunning) return;
             
             // Apply gravity for slow descent
-            velocityY += 0.03;
+            velocityY += 0.025;
             
             // Apply angular damping (natural stabilization)
-            angularVelocity *= 0.96;
+            angularVelocity *= 0.97;
             airplaneAngle += angularVelocity;
             
-            // Apply air resistance
-            velocityX *= 0.99;
+            // Apply air resistance for more realistic movement
+            velocityX *= 0.985;
             velocityY *= 0.995;
             
             // Update position
@@ -411,11 +449,17 @@ HTML_TEMPLATE = """
             
             // Update altitude and speed
             altitude = 300 - airplaneY;
-            speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY) * 15;
+            speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY) * 12;
             
             // Boundary checks (allow some movement beyond edges)
-            if (airplaneX < -50) airplaneX = -50;
-            if (airplaneX > 650) airplaneX = 650;
+            if (airplaneX < -100) {
+                showCrash();
+                return;
+            }
+            if (airplaneX > 700) {
+                showCrash();
+                return;
+            }
             
             // Ground collision
             if (airplaneY > 320) {
@@ -423,7 +467,7 @@ HTML_TEMPLATE = """
                 velocityY = 0;
                 
                 // Check landing success
-                if (Math.abs(airplaneAngle) < 8 && Math.abs(velocityX) < 1.5) {
+                if (Math.abs(airplaneAngle) < 7 && Math.abs(velocityX) < 1.2) {
                     showSuccess();
                 } else {
                     showCrash();
@@ -457,6 +501,6 @@ async def health_check():
     return {"status": "healthy"}
 
 if __name__ == "__main__":
-    print("🚀 Starting 2D Airplane Landing Simulator...")
-    print("🎮 Access the game at: http://localhost:8004")
-    uvicorn.run(app, host="127.0.0.1", port=8004)
+    print("🚀 Starting Realistic Airplane Landing Simulator...")
+    print("🎮 Access the game at: http://localhost:8005")
+    uvicorn.run(app, host="127.0.0.1", port=8005)

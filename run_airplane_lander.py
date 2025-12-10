@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Launcher script for 2D Airplane Landing Simulator
+Launcher script for Realistic Airplane Landing Simulator
 """
 
 import os
@@ -21,17 +21,17 @@ def check_dependencies():
         return False
 
 def main():
-    """Main function to run the landing simulator"""
-    print("🚀 2D Airplane Landing Simulator Launcher")
-    print("=" * 45)
+    """Main function to run the airplane lander"""
+    print("🚀 Realistic Airplane Landing Simulator Launcher")
+    print("=" * 50)
     
     # Check dependencies
     if not check_dependencies():
         sys.exit(1)
     
     # Start the game server
-    print("🎮 Starting 2D Airplane Landing Simulator...")
-    print("   Access the game at: http://localhost:8004")
+    print("🎮 Starting Realistic Airplane Landing Simulator...")
+    print("   Access the game at: http://localhost:8005")
     print("   Press Ctrl+C to stop the server")
     print()
     
@@ -39,7 +39,7 @@ def main():
         # Run the main application
         subprocess.run([
             sys.executable, 
-            "airplane_landing_simulator.py"
+            "airplane_lander.py"
         ])
     except KeyboardInterrupt:
         print("\n🛑 Server stopped by user")
