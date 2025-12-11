@@ -438,13 +438,13 @@ HTML_TEMPLATE = """
             leftFlame.style.height = '40px';
             
             // Apply left thrust: pushes rocket RIGHT and creates CLOCKWISE rotation
-            velocityX += 0.35;  // Push right
-            angularVelocity += 1.0; // Clockwise rotation
+            velocityX += 0.55;  // Increased from 0.35 to 0.55 for faster response
+            angularVelocity += 1.5; // Increased from 1.0 to 1.5 for faster rotation
             
             // Add slight wobble effect
             setTimeout(() => {
                 if (leftKey.classList.contains('active')) {
-                    rocketAngle += 0.5;
+                    rocketAngle += 0.8; // Increased from 0.5 to 0.8
                 }
             }, 50);
         }
@@ -465,17 +465,17 @@ HTML_TEMPLATE = """
             rightFlame.style.height = '40px';
             
             // Apply right thrust: pushes rocket LEFT and creates COUNTER-CLOCKWISE rotation
-            velocityX -= 0.35;  // Push left
-            angularVelocity -= 1.0; // Counter-clockwise rotation
+            velocityX -= 0.55;  // Increased from 0.35 to 0.55 for faster response
+            angularVelocity -= 1.5; // Increased from 1.0 to 1.5 for faster rotation
             
             // Add slight wobble effect
             setTimeout(() => {
                 if (rightKey.classList.contains('active')) {
-                    rocketAngle -= 0.5;
+                    rocketAngle -= 0.8; // Increased from 0.5 to 0.8
                 }
             }, 50);
         }
-        
+
         function deactivateRightEngine() {
             rightKey.classList.remove('active');
             rightFlame.style.opacity = '0';
@@ -517,15 +517,15 @@ HTML_TEMPLATE = """
             if (!gameRunning) return;
             
             // Apply gravity for slow descent
-            velocityY += 0.025;
+            velocityY += 0.03; // Increased from 0.025 to 0.03 for slightly faster descent
             
             // Apply angular damping (natural stabilization)
-            angularVelocity *= 0.97;
+            angularVelocity *= 0.96; // Reduced from 0.97 to 0.96 for less stabilization
             rocketAngle += angularVelocity;
             
             // Apply air resistance for more realistic movement
-            velocityX *= 0.985;
-            velocityY *= 0.995;
+            velocityX *= 0.98; // Reduced from 0.985 to 0.98 for less resistance
+            velocityY *= 0.994; // Reduced from 0.995 to 0.994 for slightly faster descent
             
             // Update position
             rocketX += velocityX;
@@ -550,8 +550,8 @@ HTML_TEMPLATE = """
                 rocketY = 315;
                 velocityY = 0;
                 
-                // Check landing success
-                if (Math.abs(rocketAngle) < 7 && Math.abs(velocityX) < 1.2) {
+                // Check landing success - made more challenging
+                if (Math.abs(rocketAngle) < 5 && Math.abs(velocityX) < 1.0) {
                     showSuccess();
                 } else {
                     showCrash();
