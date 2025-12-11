@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Realistic 2D Airplane Landing Simulator
-A clean implementation with realistic physics for airplane landing simulation.
+Realistic 2D Rocket Landing Simulator
+A clean implementation with realistic physics for rocket landing simulation.
 """
 
 import uvicorn
@@ -9,7 +9,7 @@ from fastapi import FastAPI
 from fastapi.responses import HTMLResponse
 
 # Create FastAPI app
-app = FastAPI(title="Realistic Airplane Landing Simulator", description="2D airplane landing with realistic physics")
+app = FastAPI(title="Realistic Rocket Landing Simulator", description="2D rocket landing with realistic physics")
 
 # HTML template with embedded CSS and JS
 HTML_TEMPLATE = """
@@ -18,18 +18,18 @@ HTML_TEMPLATE = """
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Realistic Airplane Landing Simulator</title>
+    <title>Realistic Rocket Landing Simulator</title>
     <style>
         body {
             margin: 0;
             padding: 20px;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(to bottom, #87CEEB, #B0E2FF);
+            background: linear-gradient(to bottom, #0c1445, #1a237e);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            color: #333;
+            color: #e0e0e0;
         }
 
         .container {
@@ -41,15 +41,18 @@ HTML_TEMPLATE = """
         h1 {
             font-size: 2rem;
             margin: 0 0 15px 0;
-            color: #01579B;
+            color: #bb86fc;
+            text-shadow: 0 0 10px rgba(187, 134, 252, 0.5);
         }
 
         .instructions {
-            background: rgba(255, 255, 255, 0.9);
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            background: rgba(30, 30, 46, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
         }
 
         .game-area {
@@ -57,40 +60,51 @@ HTML_TEMPLATE = """
             height: 400px;
             margin: 0 auto;
             position: relative;
-            background: linear-gradient(to bottom, #E0F7FF, #B0E2FF);
-            border-radius: 10px;
+            background: linear-gradient(to bottom, #151d3b, #0f162d);
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border: 2px solid #87CEEB;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            border: 2px solid #5e35b1;
         }
 
-        #airplane {
+        #rocket {
             position: absolute;
-            width: 80px;
-            height: 30px;
-            transition: transform 0.15s ease;
+            width: 40px;
+            height: 40px;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         #left-engine-flame {
             position: absolute;
-            width: 30px;
-            height: 15px;
-            background: linear-gradient(to right, orange, red, yellow);
-            border-radius: 50% 0 0 50%;
+            width: 20px;
+            height: 30px;
+            background: linear-gradient(to top, #ff5722, #ff9800, #ffff00);
+            border-radius: 50% 50% 0 0;
             opacity: 0;
-            transition: opacity 0.1s;
-            box-shadow: 0 0 15px orange;
+            transition: opacity 0.15s ease, height 0.2s ease;
+            box-shadow: 0 0 15px #ff5722;
         }
 
         #right-engine-flame {
             position: absolute;
-            width: 30px;
-            height: 15px;
-            background: linear-gradient(to left, orange, red, yellow);
-            border-radius: 0 50% 50% 0;
+            width: 20px;
+            height: 30px;
+            background: linear-gradient(to top, #ff5722, #ff9800, #ffff00);
+            border-radius: 50% 50% 0 0;
             opacity: 0;
-            transition: opacity 0.1s;
-            box-shadow: 0 0 15px orange;
+            transition: opacity 0.15s ease, height 0.2s ease;
+            box-shadow: 0 0 15px #ff5722;
+        }
+
+        .center-engine-flame {
+            position: absolute;
+            width: 25px;
+            height: 40px;
+            background: linear-gradient(to top, #ff5722, #ff9800, #ffff00);
+            border-radius: 50% 50% 0 0;
+            opacity: 0.7;
+            transition: height 0.3s ease;
+            box-shadow: 0 0 20px #ff5722;
         }
 
         .ground {
@@ -98,48 +112,78 @@ HTML_TEMPLATE = """
             bottom: 0;
             width: 100%;
             height: 40px;
-            background: linear-gradient(to top, #8B4513, #A0522D);
+            background: linear-gradient(to top, #3e2723, #4e342e);
         }
 
-        .runway {
+        .landing-pad {
             position: absolute;
             bottom: 40px;
-            width: 100%;
-            height: 20px;
-            background: linear-gradient(to right, #555, #777, #555);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 15px;
+            background: linear-gradient(to right, #7b1fa2, #9c27b0, #7b1fa2);
+            border-radius: 5px 5px 0 0;
+            box-shadow: 0 0 20px rgba(156, 39, 176, 0.5);
+        }
+
+        .landing-lights {
+            position: absolute;
+            bottom: 42px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 130px;
+            display: flex;
+            justify-content: space-around;
+        }
+
+        .landing-light {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #ff5252;
+            box-shadow: 0 0 10px #ff5252;
+            animation: pulse 1.5s infinite;
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 25px;
             display: flex;
             justify-content: center;
-            gap: 30px;
+            gap: 40px;
         }
 
         .key {
-            width: 80px;
-            height: 80px;
-            background: #0288D1;
-            border-radius: 10px;
+            width: 90px;
+            height: 90px;
+            background: linear-gradient(145deg, #6200ea, #3700b3);
+            border-radius: 15px;
             display: flex;
             justify-content: center;
             align-items: center;
             color: white;
-            font-size: 1.5rem;
+            font-size: 1.8rem;
             font-weight: bold;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s ease;
         }
 
         .key.active {
-            background: #0277BD;
-            transform: translateY(2px);
+            transform: translateY(4px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            background: linear-gradient(145deg, #3700b3, #6200ea);
         }
 
         .status {
-            margin-top: 20px;
-            font-size: 1.2rem;
+            margin-top: 25px;
+            font-size: 1.3rem;
             font-weight: bold;
-            color: #01579B;
+            color: #bb86fc;
+            text-shadow: 0 0 8px rgba(187, 134, 252, 0.5);
+            background: rgba(30, 30, 46, 0.6);
+            padding: 15px 30px;
+            border-radius: 30px;
+            backdrop-filter: blur(5px);
         }
 
         .altitude-bar {
@@ -148,17 +192,18 @@ HTML_TEMPLATE = """
             top: 20px;
             width: 30px;
             height: 300px;
-            background: rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .altitude-fill {
             position: absolute;
             bottom: 0;
             width: 100%;
-            background: #4CAF50;
-            transition: height 0.3s;
+            background: linear-gradient(to top, #4caf50, #8bc34a);
+            transition: height 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .crash-animation {
@@ -167,15 +212,15 @@ HTML_TEMPLATE = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(255, 0, 0, 0.8);
+            background: rgba(255, 0, 0, 0.85);
             display: none;
             justify-content: center;
             align-items: center;
-            font-size: 3rem;
+            font-size: 3.5rem;
             color: white;
             font-weight: bold;
             z-index: 100;
-            animation: shake 0.5s infinite;
+            animation: shake 0.6s infinite;
         }
 
         .success-animation {
@@ -184,28 +229,41 @@ HTML_TEMPLATE = """
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 128, 0, 0.8);
+            background: rgba(0, 128, 0, 0.85);
             display: none;
             justify-content: center;
             align-items: center;
-            font-size: 3rem;
+            font-size: 3.5rem;
             color: white;
             font-weight: bold;
             z-index: 100;
+            animation: success-pulse 2s infinite;
         }
 
         @keyframes shake {
             0% { transform: translate(1px, 1px) rotate(0deg); }
-            10% { transform: translate(-1px, -2px) rotate(-1deg); }
-            20% { transform: translate(-3px, 0px) rotate(1deg); }
-            30% { transform: translate(3px, 2px) rotate(0deg); }
-            40% { transform: translate(1px, -1px) rotate(1deg); }
-            50% { transform: translate(-1px, 2px) rotate(-1deg); }
-            60% { transform: translate(-3px, 1px) rotate(0deg); }
-            70% { transform: translate(3px, 1px) rotate(-1deg); }
-            80% { transform: translate(-1px, -1px) rotate(1deg); }
-            90% { transform: translate(1px, 2px) rotate(0deg); }
-            100% { transform: translate(1px, -2px) rotate(-1deg); }
+            10% { transform: translate(-2px, -3px) rotate(-2deg); }
+            20% { transform: translate(-4px, 0px) rotate(2deg); }
+            30% { transform: translate(4px, 3px) rotate(0deg); }
+            40% { transform: translate(2px, -2px) rotate(2deg); }
+            50% { transform: translate(-2px, 3px) rotate(-2deg); }
+            60% { transform: translate(-4px, 1px) rotate(0deg); }
+            70% { transform: translate(4px, 1px) rotate(-2deg); }
+            80% { transform: translate(-2px, -2px) rotate(2deg); }
+            90% { transform: translate(2px, 3px) rotate(0deg); }
+            100% { transform: translate(1px, -3px) rotate(-1deg); }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 0.4; box-shadow: 0 0 5px #ff5252; }
+            50% { opacity: 1; box-shadow: 0 0 20px #ff5252; }
+            100% { opacity: 0.4; box-shadow: 0 0 5px #ff5252; }
+        }
+
+        @keyframes success-pulse {
+            0% { background: rgba(0, 128, 0, 0.85); }
+            50% { background: rgba(0, 200, 0, 0.9); }
+            100% { background: rgba(0, 128, 0, 0.85); }
         }
 
         @media (max-width: 650px) {
@@ -215,37 +273,55 @@ HTML_TEMPLATE = """
             }
             
             .controls {
-                gap: 15px;
+                gap: 20px;
             }
             
             .key {
-                width: 60px;
-                height: 60px;
-                font-size: 1.2rem;
+                width: 70px;
+                height: 70px;
+                font-size: 1.5rem;
+            }
+            
+            h1 {
+                font-size: 1.7rem;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>✈️ Realistic Airplane Landing Simulator</h1>
+        <h1>🚀 Realistic Rocket Landing Simulator</h1>
         
         <div class="instructions">
             <p>Use LEFT and RIGHT arrow keys to control engine thrust</p>
-            <p>Left Engine: Pushes plane RIGHT | Right Engine: Pushes plane LEFT</p>
+            <p>Left Engine: Pushes rocket RIGHT | Right Engine: Pushes rocket LEFT</p>
         </div>
         
         <div class="game-area" id="gameArea">
-            <svg id="airplane" width="80" height="30" viewBox="0 0 80 30">
-                <polygon points="0,15 60,5 60,25" fill="#1976D2"/>
-                <polygon points="60,5 75,15 60,25" fill="#0D47A1"/>
-                <circle cx="20" cy="15" r="5" fill="#E0E0E0"/>
+            <svg id="rocket" width="40" height="40" viewBox="0 0 40 40">
+                <!-- Rocket body -->
+                <rect x="15" y="5" width="10" height="25" fill="#e0e0e0" rx="2"/>
+                <!-- Rocket nose -->
+                <polygon points="15,5 25,5 20,0" fill="#f5f5f5"/>
+                <!-- Rocket fins -->
+                <polygon points="15,30 10,35 15,35" fill="#bdbdbd"/>
+                <polygon points="25,30 30,35 25,35" fill="#bdbdbd"/>
+                <!-- Cockpit window -->
+                <circle cx="20" cy="12" r="3" fill="#4fc3f7"/>
             </svg>
             
             <div id="left-engine-flame"></div>
             <div id="right-engine-flame"></div>
+            <div class="center-engine-flame" id="centerEngineFlame"></div>
             
-            <div class="runway"></div>
+            <div class="landing-pad"></div>
+            <div class="landing-lights">
+                <div class="landing-light"></div>
+                <div class="landing-light"></div>
+                <div class="landing-light"></div>
+                <div class="landing-light"></div>
+                <div class="landing-light"></div>
+            </div>
             <div class="ground"></div>
             
             <div class="altitude-bar">
@@ -266,9 +342,9 @@ HTML_TEMPLATE = """
     
     <script>
         // Game variables
-        let airplaneX = 300;
-        let airplaneY = 50;
-        let airplaneAngle = 0;
+        let rocketX = 300;
+        let rocketY = 50;
+        let rocketAngle = 0;
         let velocityX = 0;
         let velocityY = 0.25; // Slow descent due to gravity
         let angularVelocity = 0;
@@ -278,9 +354,10 @@ HTML_TEMPLATE = """
         let lastThrustTime = 0;
         
         // DOM elements
-        const airplane = document.getElementById('airplane');
+        const rocket = document.getElementById('rocket');
         const leftFlame = document.getElementById('left-engine-flame');
         const rightFlame = document.getElementById('right-engine-flame');
+        const centerFlame = document.getElementById('centerEngineFlame');
         const leftKey = document.getElementById('leftKey');
         const rightKey = document.getElementById('rightKey');
         const status = document.getElementById('status');
@@ -290,7 +367,7 @@ HTML_TEMPLATE = """
         const successAnimation = document.getElementById('successAnimation');
         
         // Initialize positions
-        updateAirplanePosition();
+        updateRocketPosition();
         
         // Keyboard event listeners
         document.addEventListener('keydown', function(event) {
@@ -358,15 +435,16 @@ HTML_TEMPLATE = """
             
             leftKey.classList.add('active');
             leftFlame.style.opacity = '1';
+            leftFlame.style.height = '40px';
             
-            // Apply left thrust: pushes plane RIGHT and creates CLOCKWISE rotation
+            // Apply left thrust: pushes rocket RIGHT and creates CLOCKWISE rotation
             velocityX += 0.35;  // Push right
             angularVelocity += 1.0; // Clockwise rotation
             
             // Add slight wobble effect
             setTimeout(() => {
                 if (leftKey.classList.contains('active')) {
-                    airplaneAngle += 0.5;
+                    rocketAngle += 0.5;
                 }
             }, 50);
         }
@@ -374,6 +452,7 @@ HTML_TEMPLATE = """
         function deactivateLeftEngine() {
             leftKey.classList.remove('active');
             leftFlame.style.opacity = '0';
+            leftFlame.style.height = '30px';
         }
         
         function activateRightEngine() {
@@ -383,15 +462,16 @@ HTML_TEMPLATE = """
             
             rightKey.classList.add('active');
             rightFlame.style.opacity = '1';
+            rightFlame.style.height = '40px';
             
-            // Apply right thrust: pushes plane LEFT and creates COUNTER-CLOCKWISE rotation
+            // Apply right thrust: pushes rocket LEFT and creates COUNTER-CLOCKWISE rotation
             velocityX -= 0.35;  // Push left
             angularVelocity -= 1.0; // Counter-clockwise rotation
             
             // Add slight wobble effect
             setTimeout(() => {
                 if (rightKey.classList.contains('active')) {
-                    airplaneAngle -= 0.5;
+                    rocketAngle -= 0.5;
                 }
             }, 50);
         }
@@ -399,22 +479,26 @@ HTML_TEMPLATE = """
         function deactivateRightEngine() {
             rightKey.classList.remove('active');
             rightFlame.style.opacity = '0';
+            rightFlame.style.height = '30px';
         }
         
-        function updateAirplanePosition() {
-            airplane.style.left = (airplaneX - 40) + 'px';
-            airplane.style.top = airplaneY + 'px';
-            airplane.style.transform = `rotate(${airplaneAngle}deg)`;
+        function updateRocketPosition() {
+            rocket.style.left = (rocketX - 20) + 'px';
+            rocket.style.top = rocketY + 'px';
+            rocket.style.transform = `rotate(${rocketAngle}deg)`;
             
-            leftFlame.style.left = (airplaneX - 60) + 'px';
-            leftFlame.style.top = (airplaneY + 7) + 'px';
+            leftFlame.style.left = (rocketX - 25) + 'px';
+            leftFlame.style.top = (rocketY + 35) + 'px';
             
-            rightFlame.style.left = (airplaneX + 30) + 'px';
-            rightFlame.style.top = (airplaneY + 7) + 'px';
+            rightFlame.style.left = (rocketX + 5) + 'px';
+            rightFlame.style.top = (rocketY + 35) + 'px';
+            
+            centerFlame.style.left = (rocketX - 12.5) + 'px';
+            centerFlame.style.top = (rocketY + 35) + 'px';
         }
         
         function updateStatus() {
-            status.textContent = `Altitude: ${Math.round(altitude)}ft | Speed: ${Math.round(speed)} mph | Angle: ${Math.round(airplaneAngle)}°`;
+            status.textContent = `Altitude: ${Math.round(altitude)}ft | Speed: ${Math.round(speed)} mph | Angle: ${Math.round(rocketAngle)}°`;
             altitudeFill.style.height = (altitude / 300 * 100) + '%';
         }
         
@@ -437,45 +521,45 @@ HTML_TEMPLATE = """
             
             // Apply angular damping (natural stabilization)
             angularVelocity *= 0.97;
-            airplaneAngle += angularVelocity;
+            rocketAngle += angularVelocity;
             
             // Apply air resistance for more realistic movement
             velocityX *= 0.985;
             velocityY *= 0.995;
             
             // Update position
-            airplaneX += velocityX;
-            airplaneY += velocityY;
+            rocketX += velocityX;
+            rocketY += velocityY;
             
             // Update altitude and speed
-            altitude = 300 - airplaneY;
+            altitude = 300 - rocketY;
             speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY) * 12;
             
             // Boundary checks (allow some movement beyond edges)
-            if (airplaneX < -100) {
+            if (rocketX < -100) {
                 showCrash();
                 return;
             }
-            if (airplaneX > 700) {
+            if (rocketX > 700) {
                 showCrash();
                 return;
             }
             
             // Ground collision
-            if (airplaneY > 320) {
-                airplaneY = 320;
+            if (rocketY > 315) {
+                rocketY = 315;
                 velocityY = 0;
                 
                 // Check landing success
-                if (Math.abs(airplaneAngle) < 7 && Math.abs(velocityX) < 1.2) {
+                if (Math.abs(rocketAngle) < 7 && Math.abs(velocityX) < 1.2) {
                     showSuccess();
                 } else {
                     showCrash();
                 }
             }
             
-            // Update airplane position and status
-            updateAirplanePosition();
+            // Update rocket position and status
+            updateRocketPosition();
             updateStatus();
             
             // Continue game loop
@@ -501,6 +585,6 @@ async def health_check():
     return {"status": "healthy"}
 
 if __name__ == "__main__":
-    print("🚀 Starting Realistic Airplane Landing Simulator...")
+    print("🚀 Starting Realistic Rocket Landing Simulator...")
     print("🎮 Access the game at: http://localhost:8005")
     uvicorn.run(app, host="127.0.0.1", port=8005)
